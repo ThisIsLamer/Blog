@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    ports: 
+      - 26620:3306
+    volumes:
+      - ~/apps/mariadb:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${ROOT_PASSWORD}
+      - MYSQL_PASSWORD=&{PASSWORD}
+      - MYSQL_USER=&{USER}
+      - MYSQL_DATABASE=${DATABASE}
