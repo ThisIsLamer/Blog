@@ -1,7 +1,7 @@
 version: '3.7'
 
 services:
-  mariadb:
+  mariadb-blog:
     image: mariadb:latest
     ports: 
       - 26620:3306
