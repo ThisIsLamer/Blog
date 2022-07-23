@@ -8,7 +8,75 @@ services:
     volumes:
       - ~/apps/mariadb:/var/lib/mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=${ROOT_PASSWORD}
-      - MYSQL_PASSWORD=&{PASSWORD}
-      - MYSQL_USER=&{USER}
-      - MYSQL_DATABASE=${DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DATABASE_ROOT_PASSWORD}
+      - MYSQL_PASSWORD=&{DATABASE_PASSWORD}
+      - MYSQL_USER=&{DATABASE_USER}
+      - MYSQL_DATABASE=${DATABASE_NAME}
+
+  minio1:
+    image: minio/minio:RELEASE.2020-08-08T04-50-06Z
+    volumes:
+      - ./s3/data1-1:/data1
+      - ./s3/data1-2:/data2
+    ports:
+      - '9001:9000'
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    command: server http://minio{1...4}/data{1...2}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio2:
+    image: minio/minio:RELEASE.2020-08-08T04-50-06Z
+    volumes:
+      - ./s3/data2-1:/data1
+      - ./s3/data2-2:/data2
+    ports:
+      - '9002:9000'
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    command: server http://minio{1...4}/data{1...2}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio3:
+    image: minio/minio:RELEASE.2020-08-08T04-50-06Z
+    volumes:
+      - ./s3/data3-1:/data1
+      - ./s3/data3-2:/data2
+    ports:
+      - '9003:9000'
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    command: server http://minio{1...4}/data{1...2}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  minio4:
+    image: minio/minio:RELEASE.2020-08-08T04-50-06Z
+    volumes:
+      - ./s3/data4-1:/data1
+      - ./s3/data4-2:/data2
+    ports:
+      - '9004:9000'
+    environment:
+      MINIO_ACCESS_KEY: ${MINIO_ACCESS_KEY}
+      MINIO_SECRET_KEY: ${MINIO_SECRET_KEY}
+    command: server http://minio{1...4}/data{1...2}
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
+      retries: 3
