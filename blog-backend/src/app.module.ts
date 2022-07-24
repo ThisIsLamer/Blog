@@ -6,7 +6,8 @@ import { AppService } from './app.service';
 import { TypeOrmConfigService } from './common/classes/typeormConfig.class';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
-import { MinioModule } from './minio/minio.module';
+import { BlogsModule } from './blogs/blogs.module';
+import { FilesModule } from './files/files.module';
 
 @Module({
   imports: [
@@ -16,7 +17,8 @@ import { MinioModule } from './minio/minio.module';
     }),
     AuthModule,
     UsersModule,
-    MinioModule,
+    FilesModule,
+    BlogsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

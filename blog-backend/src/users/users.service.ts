@@ -10,7 +10,14 @@ export class UsersService {
     private readonly userRepository: Repository<UserEntity>,
   ) {}
 
-  async findOne(login: string): Promise<UserEntity> {
-    return this.userRepository.findOne({ where: { login } });
+  async findOneId(id: number): Promise<UserEntity> {
+    return this.userRepository.findOne({ where: { id } });
+  }
+
+  async findOneLoginPassword(
+    login: string,
+    password: string,
+  ): Promise<UserEntity> {
+    return this.userRepository.findOne({ where: { login, password } });
   }
 }
