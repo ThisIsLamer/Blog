@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { BlogEntity } from 'src/blogs/blog.entity';
-import { BlogsService } from 'src/blogs/blogs.service';
 import { BufferedFile } from 'src/minio/dto';
 import { MinioClientService } from 'src/minio/minio.service';
 import { Repository } from 'typeorm';
