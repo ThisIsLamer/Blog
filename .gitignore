@@ -4,6 +4,7 @@
 
 .env
 s3
+/*/uploads
 
 # Logs
 logs

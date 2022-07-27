@@ -14,6 +14,13 @@ export class UsersService {
     return this.userRepository.findOne({ where: { id } });
   }
 
+  async create(user: UserEntity) {
+    if (await this.userRepository.findOne({ where: { login: user.login } })) {
+      return 'login already exists';
+    }
+    return this.userRepository.save(user);
+  }
+
   async findOneLoginPassword(
     login: string,
     password: string,

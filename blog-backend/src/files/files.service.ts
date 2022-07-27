@@ -1,46 +1,63 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { BlogEntity } from 'src/blogs/blog.entity';
-import { BufferedFile } from 'src/minio/dto';
-import { MinioClientService } from 'src/minio/minio.service';
 import { Repository } from 'typeorm';
+import { pipeline } from 'stream';
+import * as crypto from 'crypto';
+import * as util from 'util';
+import * as fs from 'fs';
+
 import { FileEntity } from './file.entity';
+import { BufferedFile } from './dto';
+import { BlogEntity } from 'src/blogs/blog.entity';
+import { join } from 'path';
 
 @Injectable()
 export class FilesService {
   constructor(
-    private minioClientService: MinioClientService,
-
     @InjectRepository(FileEntity)
     private readonly fileRepository: Repository<FileEntity>,
-    @InjectRepository(BlogEntity)
-    private readonly blogRepository: Repository<BlogEntity>,
   ) {}
 
-  private async save(file: FileEntity): Promise<FileEntity> {
+  async findFilesBlogId(blog: BlogEntity) {
+    return this.fileRepository.find({ where: { blog } });
+  }
+
+  async findFilePath(filePath: string): Promise<[string, fs.ReadStream]> {
+    const filename = (
+      await this.fileRepository.findOne({
+        where: { path: filePath },
+      })
+    ).name;
+    const file = fs.createReadStream(join(process.cwd(), filePath));
+    return [filename, file];
+  }
+
+  async save(file: FileEntity): Promise<FileEntity> {
     return this.fileRepository.save(file);
   }
 
-  async upload(file: BufferedFile, blog: BlogEntity) {
-    const uploaded_file = await this.minioClientService.upload(file);
+  async uploadFile(fileData: BufferedFile) {
+    const hashedFileName = crypto
+      .createHash('md5')
+      .update(
+        new Date().toString() +
+          fileData.filename +
+          fileData +
+          fileData.mimetype,
+      )
+      .digest('hex');
+    const ext = fileData.filename.substring(
+      fileData.filename.lastIndexOf('.'),
+      fileData.filename.length,
+    );
 
-    const saveFile = new FileEntity();
-    saveFile.name = file.originalname;
-    saveFile.size = file.size;
-    saveFile.url = uploaded_file.url;
-    saveFile.blog = blog;
-
-    blog.files = [...blog.files, saveFile];
-    await this.blogRepository.save(blog);
-
-    await this.save(saveFile);
-
-    return {
-      url: uploaded_file.url,
-      code: uploaded_file.hashedFileName,
-      name: file.originalname,
-      size: file.size,
-      message: 'Successfully uploaded to MinIO S3',
-    };
+    const pipelineLoaded = util.promisify(pipeline);
+    const writeStream = fs.createWriteStream(`uploads/${hashedFileName + ext}`);
+    try {
+      await pipelineLoaded(fileData.file, writeStream);
+      return hashedFileName + ext;
+    } catch (err) {
+      return null;
+    }
   }
 }

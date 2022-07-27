@@ -9,7 +9,7 @@ export class BlogEntity extends BaseEntity {
   @Column({
     type: 'text',
     comment: 'text for blog',
-    nullable: false,
+    default: '',
   })
   @IsString()
   message: string;

@@ -1,16 +1,14 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { BlogEntity } from 'src/blogs/blog.entity';
-import { MinioClientModule } from 'src/minio/minio.module';
 import { FileEntity } from './file.entity';
 import { FilesService } from './files.service';
+import { FilesController } from './files.controller';
 
 @Module({
-  imports: [
-    MinioClientModule,
-    TypeOrmModule.forFeature([FileEntity, BlogEntity]),
-  ],
+  imports: [TypeOrmModule.forFeature([FileEntity, BlogEntity])],
   providers: [FilesService],
   exports: [FilesService],
+  controllers: [FilesController],
 })
 export class FilesModule {}

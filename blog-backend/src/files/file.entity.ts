@@ -5,17 +5,13 @@ import { Column, Entity, ManyToOne } from 'typeorm';
 
 @Entity('files')
 export class FileEntity extends BaseEntity {
-  @Column({ length: 30, comment: 'file name', nullable: false })
+  @Column({ length: 256, comment: 'file name', nullable: false })
   @IsString()
   name: string;
 
-  @Column({ length: 256, comment: 'url to file', nullable: false })
+  @Column({ length: 256, comment: 'path a file', nullable: false })
   @IsString()
-  url: string;
-
-  @Column({ comment: 'file size', nullable: false })
-  @IsNumber()
-  size: number;
+  path: string;
 
   @ManyToOne(() => BlogEntity, (blog) => blog.files)
   blog: BlogEntity;

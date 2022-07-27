@@ -5,3 +5,10 @@ export type ValidateUser = {
   createAt: Date;
   updateAt: Date;
 };
+
+export type UserJWTTocken = {
+  login: string;
+  id: number;
+  iat: number;
+  exp: number;
+};

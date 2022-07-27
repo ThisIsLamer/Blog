@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from 'src/users/users.service';
 import { setTimeout } from 'timers/promises';
-import { ValidateUser } from './dto';
+import { UserJWTTocken, ValidateUser } from './dto';
 
 @Injectable()
 export class AuthService {
@@ -26,17 +26,15 @@ export class AuthService {
     return null;
   }
 
+  async verified(tocken: string): Promise<UserJWTTocken> {
+    return this.jwtService.verify(tocken);
+  }
+
   async login(user: any) {
     const validUser = await this.validateUser(user.login, user.password);
     if (validUser) {
-      const payload = { login: validUser.login, sub: validUser.id };
+      const payload = { login: validUser.login, id: validUser.id };
       const accessToken = this.jwtService.sign(payload);
-
-      global.AUTHS[accessToken] = validUser.id;
-      (async (accessToken) =>
-        setTimeout(this.configService.get<number>('JWT_EXPIRES') * 1000, () => {
-          delete global.AUTHS[accessToken];
-        }))(accessToken);
 
       return { access_token: accessToken };
     }
