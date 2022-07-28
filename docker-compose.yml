@@ -13,3 +13,16 @@ services:
       - MYSQL_USER=&{DATABASE_USER}
       - MYSQL_DATABASE=${DATABASE_NAME}
     restart: unless-stopped
+
+  blog-backend:
+    build:
+      context: ./blog-backend
+      dockerfile: Dockerfile
+      target: base
+    container_name: blog-backend
+    ports:
+     - 26621:3000
+    command: npm run start:prod
+    depends_on:
+      - mariadb-blog
+    restart: unless-stopped
