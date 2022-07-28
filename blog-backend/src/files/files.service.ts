@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { pipeline } from 'stream';
 import * as crypto from 'crypto';
 import * as util from 'util';
 import * as fs from 'fs';
 
 import { FileEntity } from './file.entity';
-import { BufferedFile } from './dto';
+import { IBufferedFile } from './dto';
 import { BlogEntity } from 'src/blogs/blog.entity';
 import { join } from 'path';
 
@@ -36,7 +36,16 @@ export class FilesService {
     return this.fileRepository.save(file);
   }
 
-  async uploadFile(fileData: BufferedFile) {
+  async remove(...ids: number[]) {
+    const files = await this.fileRepository.find({ where: { id: In(ids) } });
+    await this.fileRepository.remove(files);
+  }
+
+  async removeEntity(...files: FileEntity[]) {
+    await this.fileRepository.remove(files);
+  }
+
+  async uploadFile(fileData: IBufferedFile) {
     const hashedFileName = crypto
       .createHash('md5')
       .update(

@@ -1,4 +1,6 @@
-export class AppResponseDto {
+import { ApiProperty } from '@nestjs/swagger';
+
+export class IAppResponseDto {
   constructor(
     public statusCode: number,
     public data: any = undefined,
@@ -6,10 +8,15 @@ export class AppResponseDto {
   ) {}
 }
 
-export interface BufferedFile {
+export interface IBufferedFile {
   field: string;
   file: any;
   filename: string;
   encoding: string;
   mimetype: string;
+}
+
+export class GetFilePath {
+  @ApiProperty({ type: 'string', format: 'binary' })
+  path: string;
 }

@@ -18,7 +18,8 @@ export class UsersService {
     if (await this.userRepository.findOne({ where: { login: user.login } })) {
       return 'login already exists';
     }
-    return this.userRepository.save(user);
+    this.userRepository.save(user);
+    return 'Registration successful';
   }
 
   async findOneLoginPassword(

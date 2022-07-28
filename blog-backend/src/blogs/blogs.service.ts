@@ -3,9 +3,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FilesService } from 'src/files/files.service';
 import { UsersService } from 'src/users/users.service';
 import { Repository } from 'typeorm';
+import * as fs from 'fs';
 
 import { BlogEntity } from './blog.entity';
-import { AppResponseDto } from 'src/files/dto';
+import { IAppResponseDto } from 'src/files/dto';
 import { FileEntity } from 'src/files/file.entity';
 
 @Injectable()
@@ -32,7 +33,63 @@ export class BlogsService {
   }
 
   async findAll(): Promise<BlogEntity[]> {
-    return await this.blogRepository.find({ relations: ['files'] });
+    return await this.blogRepository.find({ relations: ['files', 'user'] });
+  }
+
+  async blogEdit(userId: number, blogId: number, message: string) {
+    const user = await this.userService.findOneId(userId);
+    const blog = await this.blogRepository.findOne({
+      where: { id: blogId, user: user },
+      relations: ['files', 'user'],
+    });
+
+    if (!blog) return 'This blog does not exist, or you are not its author';
+
+    blog.message = message;
+    this.blogRepository.save(blog);
+    return blog;
+  }
+
+  async blogRemoveMedia(userId: number, blogId: number, mediaIds: number[]) {
+    const user = await this.userService.findOneId(userId);
+    const blog = await this.blogRepository.findOne({
+      where: { id: blogId, user: user },
+      relations: ['files'],
+    });
+
+    if (!blog) return 'This blog does not exist, or you are not its author';
+    if (!blog?.files) return 'block has no attachments';
+
+    const deleteFiles: FileEntity[] = [];
+    for (const file of blog.files) {
+      if (mediaIds.find((i) => i == file.id)) {
+        deleteFiles.push(file);
+      }
+    }
+
+    this.fileService.removeEntity(...deleteFiles).then(() => {
+      deleteFiles.map((file) => {
+        fs.unlinkSync(process.cwd() + '/' + file.path);
+      });
+    });
+  }
+
+  async blogDelete(userId: number, blogId: number) {
+    const user = await this.userService.findOneId(userId);
+    const blog = await this.blogRepository.findOne({
+      where: { id: blogId, user },
+      relations: ['files'],
+    });
+
+    if (!blog) return 'The blog is missing or you are not its author';
+
+    await this.fileService.removeEntity(...blog.files);
+
+    this.blogRepository.remove(blog).then(() => {
+      blog.files.map((file) => {
+        fs.unlinkSync(process.cwd() + '/' + file.path);
+      });
+    });
   }
 
   async save(blog: BlogEntity): Promise<BlogEntity> {
@@ -48,7 +105,7 @@ export class BlogsService {
     if (!request.isMultipart()) {
       response.send(
         new BadRequestException(
-          new AppResponseDto(400, undefined, 'Request is not multipart'),
+          new IAppResponseDto(400, undefined, 'Request is not multipart'),
         ),
       );
       return;
@@ -85,7 +142,9 @@ export class BlogsService {
       }
       response
         .code(200)
-        .send(new AppResponseDto(200, undefined, 'Data uploaded successfully'));
+        .send(
+          new IAppResponseDto(200, undefined, 'Data uploaded successfully'),
+        );
     }
     this.save(blog);
   }
